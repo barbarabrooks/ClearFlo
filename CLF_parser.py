@@ -140,4 +140,3 @@ def t_control(logfile):
         
       # run through run list for each deployment mode
       do_run(name, product, ver, meta, data, logfile)
-      exit()

@@ -8,7 +8,7 @@ def create_NC_file(nm, dp, ver, opt1, opt2, opt3, start_date, logfile):
       dout = 'Data\\'
       f1 = nm # instrument name
       f2 = 'north-kensington'
-      f3 = datetime.fromtimestamp(int(start_date)).strftime('%Y%m') # date
+      f3 = datetime.fromtimestamp(int(start_date)).strftime('%Y%m%d') # date
       f4 = dp # data product
       f5 = 'v' + ver # version number
       f6 = '.nc'
