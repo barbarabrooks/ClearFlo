@@ -1,0 +1,21 @@
+# Configuration file for conveting WAO data to nc
+# Required by WAO_v4.py
+# Develped by Barbara Brooks <barbara.brooks@ncas.ac.uk>
+# 06/2020
+# Each input on a separate line
+
+# version
+# instrument name
+# data product
+# path to data directory
+
+##### Start - do not remove #####
+1.0
+ncas-sonic-3
+mean-winds
+C:\Users\lecbjb\Desktop\WORK\TEMP\ClearFlo\Sonic
+#ncas-aws-3
+#surface-met
+#C:\Users\lecbjb\Desktop\WORK\TEMP\ClearFlo\AWS
+##### End - do not remove #####
+
