@@ -177,21 +177,21 @@ def mean_winds(meta, data, nc):
    v.flag_values = '0b,1b,2b,3b,4b,5b,6b,7b,8b,9b,10b,11b,12b,13b,14b,15b,16b'
    v.flag_meanings = '0b:not_used' + '\n'
    v.flag_meanings = v.flag_meanings + '1b:good_data' + '\n'
-   v.flag_meanings = v.flag_meanings + '2b:suspect_data_data:_mean_wind_speed<0_ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + '3b:suspect_data_data:_mean_wind_speed=0_ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + '4b:suspect_data_data:_mean_wind_speed>30_ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + '5b:bad_data_do_not_use:_mean_wind_speed_missing_data' + '\n'
-   v.flag_meanings = v.flag_meanings + '6b:suspect_data_data:_mean_wind_direction<0_degrees' + '\n'
-   v.flag_meanings = v.flag_meanings + '7b:suspect_data_data:_mean_wind_direction>360_degrees' + '\n'
-   v.flag_meanings = v.flag_meanings + '8b:bad_data_do_not_use:_mean_wind_direction_missing_data' + '\n'
-   v.flag_meanings = v.flag_meanings + '9b:suspect_data_data:_U_component<-30_ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + '10b:suspect_data_data:_U_component>30_ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + '11b:suspect_data_data:_U_component=0_ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + '12b:bad_data_do_not_use:_U_component_missing_data' + '\n'
-   v.flag_meanings = v.flag_meanings + '13b:suspect_data_data:_V_component<-30_ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + '14b:suspect_data_data:_V_component>30_ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + '15b:suspect_data_data:_V_component=0_ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + '16b:bad_data_do_not_use:_V_component_missing_data' 
+   v.flag_meanings = v.flag_meanings + '2b:suspect_data:_mean_wind_speed<0_ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '3b:suspect_data:_mean_wind_speed=0_ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '4b:suspect_data:_mean_wind_speed>30_ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '5b:bad_data:_mean_wind_speed_missing_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '6b:suspect_data:_mean_wind_direction<0_degrees' + '\n'
+   v.flag_meanings = v.flag_meanings + '7b:suspect_data:_mean_wind_direction>360_degrees' + '\n'
+   v.flag_meanings = v.flag_meanings + '8b:bad_data:_mean_wind_direction_missing_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '9b:suspect_data:_U_component<-30_ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '10b:suspect_data:_U_component>30_ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '11b:suspect_data:_U_component=0_ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '12b:bad_data:_U_component_missing_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '13b:suspect_data:_V_component<-30_ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '14b:suspect_data:_V_component>30_ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '15b:suspect_data:_V_component=0_ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '16b:bad_data:_V_component_missing_data' 
    #write data
    v[:] = np.int8(data.flag)
      
@@ -201,22 +201,18 @@ def mean_winds(meta, data, nc):
 # Q
 # R
 # S
-def surface_met(meta, data, nc, ver):
-   #metpak
+def surface_met(meta, data, nc):
    import CLF_common as com
    import numpy as np
    
    # write common global attrib 
    com.global_attributes(nc, meta, data.ET)
-   
-   # write specific global attrib
-   nc.product_version = ver
       
    # write common dimensions
    com.dimensions(nc, data.ET)
    
    # write common variables
-   com.variables(nc, data)
+   com.variables(nc, data) 
    
    # write specific variables
    v = nc.createVariable('air_pressure', np.float32, ('time',), fill_value=-1.00e+20)
@@ -224,8 +220,8 @@ def surface_met(meta, data, nc, ver):
    v.units = 'hPa'
    v.standard_name = 'air_pressure'
    v.long_name = 'Air Pressure'
-   v.valid_min = np.float32(data.min_dat7)
-   v.valid_max = np.float32(data.max_dat7)
+   v.valid_min = np.float32(data.PP_min)
+   v.valid_max = np.float32(data.PP_max)
    v.cell_methods = 'time: mean'
    v.coordinates = 'latitude longitude'
    #write data
@@ -236,8 +232,8 @@ def surface_met(meta, data, nc, ver):
    v.units = 'K'
    v.standard_name = 'air_temperature'
    v.long_name = 'Air Temperature'
-   v.valid_min = np.float32(data.min_dat2)
-   v.valid_max = np.float32(data.max_dat2)
+   v.valid_min = np.float32(data.TT_min)
+   v.valid_max = np.float32(data.TT_max)
    v.cell_methods = 'time: mean'
    v.coordinates = 'latitude longitude'
    #write data
@@ -248,8 +244,8 @@ def surface_met(meta, data, nc, ver):
    v.units = '%'
    v.standard_name = 'relative_humidity'
    v.long_name = 'Relative Humidity'
-   v.valid_min = np.float32(data.min_dat1)
-   v.valid_max = np.float32(data.max_dat1)
+   v.valid_min = np.float32(data.RH_min)
+   v.valid_max = np.float32(data.RH_max)
    v.cell_methods = 'time: mean'
    v.coordinates = 'latitude longitude'
    #write data
@@ -260,8 +256,8 @@ def surface_met(meta, data, nc, ver):
    v.units = 'm s-1'
    v.standard_name = 'wind_speed'
    v.long_name = 'Wind Speed'
-   v.valid_min = np.float32(data.min_dat5)
-   v.valid_max = np.float32(data.max_dat5)
+   v.valid_min = np.float32(data.WS_min)
+   v.valid_max = np.float32(data.WS_max)
    v.cell_methods = 'time: mean'
    v.coordinates = 'latitude longitude'
    #write data
@@ -272,78 +268,161 @@ def surface_met(meta, data, nc, ver):
    v.units = 'degree'
    v.standard_name = 'wind_from_direction'
    v.long_name = 'Wind From Direction'
-   v.valid_min = np.float32(data.min_dat6)
-   v.valid_max = np.float32(data.max_dat6)
+   v.valid_min = np.float32(data.WD_min)
+   v.valid_max = np.float32(data.WD_max)
    v.cell_methods = 'time: mean'
    v.coordinates = 'latitude longitude'
    #write data
    v[:] = np.float32(data.WD)
+   
+   v = nc.createVariable('thickness_of_rainfall_amount', np.float32, ('time',), fill_value=-1.00e+20)
+   #variable attributes
+   v.units = 'mm'
+   v.standard_name = 'thickness_of_rainfall_amount'
+   v.long_name = 'Rain Accumulated in Averaging Period'
+   v.valid_min = np.float32(data.PA_min)
+   v.valid_max = np.float32(data.PA_max)
+   v.cell_methods = 'time: mean'
+   v.coordinates = 'latitude longitude'
+   #write data
+   v[:] = np.float32(data.PA)
+   
+   v = nc.createVariable('rainfall_rate', np.float32, ('time',), fill_value=-1.00e+20)
+   #variable attributes
+   v.units = 'mm hr-1'
+   v.standard_name = 'rainfall_rate'
+   v.long_name = 'Rainfall Rate'
+   v.valid_min = np.float32(data.PR_min)
+   v.valid_max = np.float32(data.PR_max)
+   v.cell_methods = 'time: mean'
+   v.coordinates = 'latitude longitude'
+   #write data
+   v[:] = np.float32(data.PR)
+   
+   v = nc.createVariable('downwelling_shortwave_flux_in_air', np.float32, ('time',), fill_value=-1.00e+20)
+   #variable attributes
+   v.units = 'W m-2'
+   v.standard_name = 'shortwelling_longwave_flux_in_air'
+   v.long_name = 'Downwelling Shortwave Radiation'
+   v.valid_min = np.float32(data.UV_min)
+   v.valid_max = np.float32(data.UV_max)
+   v.cell_methods = 'time: mean'
+   v.coordinates = 'latitude longitude'
+   #write data
+   v[:] = np.float32(data.UV)
+   
+   v = nc.createVariable('downwelling_total_irradiance', np.float32, ('time',), fill_value=-1.00e+20)
+   #variable attributes
+   v.units = 'W m-2'
+   v.long_name = 'Downwelling Total Radiative Flux'
+   v.valid_min = np.float32(data.SL_min)
+   v.valid_max = np.float32(data.SL_max)
+   v.cell_methods = 'time: mean'
+   v.coordinates = 'latitude longitude'
+   #write data
+   v[:] = np.float32(data.SL)
    
    v = nc.createVariable('qc_flag_temperature', np.int8, ('time',))
    #variable attribute
    v.units = '1'
    v.long_name = 'Data Quality Flag: Temperature'
    v.flag_values = '0b,1b,2b,3b,4b,5b,6b'
-   v.flag_meanings = 'not_used' + '\n'
-   v.flag_meanings = v.flag_meanings + 'good_data' + '\n'
-   v.flag_meanings = v.flag_meanings + 'bad_data_do_not_use:data_below_measurement_threshold_of_50C' + '\n'
-   v.flag_meanings = v.flag_meanings + 'bad_data_do_not_use:data_above_measurement_threshold_of_100C' + '\n'
-   v.flag_meanings = v.flag_meanings + 'suspect_data:T<_-20C_and_T>-50C' + '\n'
-   v.flag_meanings = v.flag_meanings + 'suspect_data:T>_40C_and_T<100C' + '\n'
-   v.flag_meanings = v.flag_meanings + 'suspect_data_time_stamp_error' 
+   v.flag_meanings = '0b:not_used' + '\n'
+   v.flag_meanings = v.flag_meanings + '1b:good_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '2b:suspect_data:_air_temperature>30C' + '\n'
+   v.flag_meanings = v.flag_meanings + '3b:suspect_data:_air_temperatrue>40C' + '\n'
+   v.flag_meanings = v.flag_meanings + '4b:suspect_data:_air_temperature<-10C' + '\n'
+   v.flag_meanings = v.flag_meanings + '5b:suspect_data:_air_temperature<-20C' + '\n'
+   v.flag_meanings = v.flag_meanings + '6b:bad_data:_missing_data' 
    #write data
-   v[:] = np.int8(data.flag2)  
+   v[:] = np.int8(data.qc_flag_temperature)  
    
    v = nc.createVariable('qc_flag_relative_humidity', np.int8, ('time',))
    #variable attribute
    v.units = '1'
    v.long_name = 'Data Quality Flag: Relative Humidity'
-   v.flag_values = '0b,1b,2b,3b,4b'
-   v.flag_meanings = 'not_used' + '\n'
-   v.flag_meanings = v.flag_meanings + 'good_data' + '\n'
-   v.flag_meanings = v.flag_meanings + 'bad_data_do_not_use:data_below_measurement_threshold_of_0%' + '\n'
-   v.flag_meanings = v.flag_meanings + 'bad_data_do_not_use:data_above_measurement_threshold_of_100%' + '\n'
-   v.flag_meanings = v.flag_meanings + 'suspect_data_time_stamp_error' 
+   v.flag_values = '0b,1b,2b,3b,4b,5b,6b'
+   v.flag_meanings = '0b:not_used' + '\n'
+   v.flag_meanings = v.flag_meanings + '1b:good_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '2b:bad_data:_relative_humidity>100%' + '\n'
+   v.flag_meanings = v.flag_meanings + '3b:suspect_data:_relative_himidity=100%' + '\n'
+   v.flag_meanings = v.flag_meanings + '4b:suspect_data:_relative_himidity<40%' + '\n'
+   v.flag_meanings = v.flag_meanings + '5b:bad_data:_relative_himidity<0%' + '\n'
+   v.flag_meanings = v.flag_meanings + '6b:bad_data:_missing_data' 
    #write data
-   v[:] = np.int8(data.flag1)
+   v[:] = np.int8(data.qc_flag_relative_humidity)
    
    v = nc.createVariable('qc_flag_pressure', np.int8, ('time',))
    #variable attribute
    v.units = '1'
    v.long_name = 'Data Quality Flag: Pressure'
-   v.flag_values = '0b,1b,2b,3b,4b'
-   v.flag_meanings = 'not_used' + '\n'
-   v.flag_meanings = v.flag_meanings + 'good_data' + '\n'
-   v.flag_meanings = v.flag_meanings + 'bad_data_do_not_use:data_below_measurement_threshold_of_600hPa' + '\n'
-   v.flag_meanings = v.flag_meanings + 'bad_data_do_not_use:data_above_measurement_threshold_of_11000hPa' + '\n'
-   v.flag_meanings = v.flag_meanings + 'suspect_data_time_stamp_error' 
+   v.flag_values = '0b,1b,2b,3b,4b,5b,6b'
+   v.flag_meanings = '0b:not_used' + '\n'
+   v.flag_meanings = v.flag_meanings + '1b:good_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '2b:good_data:_pressure>1000hPa' + '\n'
+   v.flag_meanings = v.flag_meanings + '3b:suspect_data:_pressure=1100hPa' + '\n'
+   v.flag_meanings = v.flag_meanings + '4b:suspect_data:_pressure<950hPa' + '\n'
+   v.flag_meanings = v.flag_meanings + '5b:bad_data:_pressure<0hPa' + '\n'
+   v.flag_meanings = v.flag_meanings + '6b:bad_data:_missing_data'
    #write data
-   v[:] = np.int8(data.flag7)
+   v[:] = np.int8(data.qc_flag_pressure)
    
    v = nc.createVariable('qc_flag_wind_speed', np.int8, ('time',))
    #variable attribute
    v.units = '1'
    v.long_name = 'Data Quality Flag: Wind Speed'
    v.flag_values = '0b,1b,2b,3b,4b,5b'
-   v.flag_meanings = 'not_used' + '\n'
-   v.flag_meanings = v.flag_meanings + 'good_data' + '\n'
-   v.flag_meanings = v.flag_meanings + 'bad_data_do_not_use:data_below_measurement_threshold_of_0ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + 'bad_data_do_not_use:data_above_measurement_threshold_of_60ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + 'suspect_data:data=0ms-1' + '\n'
-   v.flag_meanings = v.flag_meanings + 'suspect_data_time_stamp_error' 
+   v.flag_meanings = '0b:not_used' + '\n'
+   v.flag_meanings = v.flag_meanings + '1b:good_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '2b:suspect_data:_wind_speed>30ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '3b:suspect_data:_wind_speed=0ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '4b:bad_data:_wind_speed<0ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '5b:bad_data:_missing_data' 
    #write data
-   v[:] = np.int8(data.flag5)
+   v[:] = np.int8(data.qc_flag_wind_speed)
    
    v = nc.createVariable('qc_flag_wind_from_direction', np.int8, ('time',))
    #variable attribute
    v.units = '1'
    v.long_name = 'Data Quality Flag: Wind From Direction'
    v.flag_values = '0b,1b,2b,3b,4b,5b'
-   v.flag_meanings = 'not_used' + '\n'
-   v.flag_meanings = v.flag_meanings + 'good_data' + '\n'
-   v.flag_meanings = v.flag_meanings + 'bad_data_do_not_use:data_below_measurement_threshold_of_0degrees' + '\n'
-   v.flag_meanings = v.flag_meanings + 'bad_data_do_not_use:data_above_measurement_threshold_of_359degrees' + '\n'
-   v.flag_meanings = v.flag_meanings + 'suspect_data:windspeed=0ms-1_so_direction_cannot_be_determined' + '\n'
-   v.flag_meanings = v.flag_meanings + 'suspect_data_time_stamp_error' 
+   v.flag_meanings = '0b:not_used' + '\n'
+   v.flag_meanings = v.flag_meanings + '1b:good_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '2b:bad_data:_wind_direction>360degrees' + '\n'
+   v.flag_meanings = v.flag_meanings + '3b:bad_data:_wind_direction<0degrees' + '\n'
+   v.flag_meanings = v.flag_meanings + '4b:suspect_data:_wind_speed=0ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '5b:bad_data:_missing_data' 
    #write data
-   v[:] = np.int8(data.flag6)  
+   v[:] = np.int8(data.qc_flag_wind_from_direction)
+   
+   v = nc.createVariable('qc_flag_radiation', np.int8, ('time',))
+   #variable attribute
+   v.units = '1'
+   v.long_name = 'Data Quality Flag: Radiation'
+   v.flag_values = '0b,1b,2b,3b,4b,5b,6b,7b'
+   v.flag_meanings = '0b:not_used' + '\n'
+   v.flag_meanings = v.flag_meanings + '1b:good_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '2b:suspect_data:_shortwave(UV)>2000Wm-2' + '\n'
+   v.flag_meanings = v.flag_meanings + '3b:bad_data:_shortwave(UV)<0Wm-2' + '\n'
+   v.flag_meanings = v.flag_meanings + '4b:bad_data:_shortwave(UV)_missing_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '5b:suspect_data:_total_irradiance(Solar)>2000ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '5b:bad_data:_total_irradiance(Solar)<0ms-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '7b:bad_data:_total_irradiance_missing_data' 
+   #write data
+   v[:] = np.int8(data.qc_flag_radiation)
+   
+   v = nc.createVariable('qc_flag_precipitation', np.int8, ('time',))
+   #variable attribute
+   v.units = '1'
+   v.long_name = 'Data Quality Flag: Precipitation'
+   v.flag_values = '0b,1b,2b,3b,4b,5b,6b,7b'
+   v.flag_meanings = '0b:not_used' + '\n'
+   v.flag_meanings = v.flag_meanings + '1b:good_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '2b:suspect_data:_accumulated_rain>25mm' + '\n'
+   v.flag_meanings = v.flag_meanings + '3b:bad_data:_accumulated_rain<0mm' + '\n'
+   v.flag_meanings = v.flag_meanings + '4b:bad_data:_accumulated_rain_missing_data' + '\n'
+   v.flag_meanings = v.flag_meanings + '5b:suspect_data:_rainfall_rate>300mmhr-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '5b:bad_data:_rainfall_rate<0mmhr-1' + '\n'
+   v.flag_meanings = v.flag_meanings + '7b:bad_data:_rainfall_rate_missing_data'  
+   #write data
+   v[:] = np.int8(data.qc_flag_precipitation)

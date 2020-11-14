@@ -86,8 +86,8 @@ def read_data_file(dp, fn_in, data, logfile):
    if dp == 'ncas-sonic-3':
       data = dat.ncas_sonic_3(fn_in, data, logfile)
          
-   #if dp == 'ncas-aws-3':
-   #   data = dat.ncas_aws_3(fn_in, data, logfile)    
+   if dp == 'ncas-aws-3':
+      data = dat.ncas_aws_3(fn_in, data, logfile)    
          
    del dat
    
@@ -112,9 +112,8 @@ def do_run(name, product, ver, meta, data, logfile):
    if product == 'surface-met':
       # create nc file - aws3
       nc = prod.create_NC_file(name, product, ver, opt1, opt2, opt3, data.ET[0], logfile)
-      prod.surface_met(meta, data, nc, ver)
-      nc.close() 
-         
+      prod.surface_met(meta, data, nc)
+      nc.close()  
    del prod
 
 def t_control(logfile): 
@@ -128,15 +127,18 @@ def t_control(logfile):
    # read in meta file
    meta = read_meta(logfile, name)
    
-   #read in data
-   data = namedtuple("data", "") 
-   data.lat = 51.52028
-   data.lon = -0.21333
-   
    for fn in list:
+      #read in data
+      data = namedtuple("data", "") 
+      data.lat = 51.52028
+      data.lon = -0.21333
+      
       fn_in = os.path.join(dn_in, fn)
       print('Processing file: ',fn)
+      
       data = read_data_file(name, fn_in, data, logfile)
         
       # run through run list for each deployment mode
       do_run(name, product, ver, meta, data, logfile)
+      
+      del data, fn_in

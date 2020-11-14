@@ -34,6 +34,7 @@ def ncas_sonic_3_QC(df):
    import numpy as np
    
    header = df.columns
+   
    DD = np.array(df.loc[:,header[1]:header[1]:1])
    FF = np.array(df.loc[:,header[2]:header[2]:1])
    
@@ -57,7 +58,7 @@ def ncas_sonic_3_QC(df):
       except:
          WD[n] = np.nan
          WS[n] = np.nan
-           
+      
       #WS < 0
       if np.isnan(WS[n]) == False:
          if WS[n] < 0:
@@ -340,7 +341,7 @@ def ncas_sonic_3(fn_in, data, logfile):
    import pandas as pd  
    
    try:
-      df = pd.read_csv(fn_in, usecols=[0,3,4])
+      df = pd.read_csv(fn_in, usecols=[0,3,4], header=None)
    except:
       # exit if problem encountered
       print("Unable to open data file: ", fn_in, ". This program will terminate")
@@ -358,5 +359,511 @@ def ncas_sonic_3(fn_in, data, logfile):
     
    return data    
          
-#def ncas_aws_3(fn_in, data, logfile): 
-#   return data 
+def ncas_aws_3_time(df, data):
+   import time
+   from datetime import datetime
+   import calendar
+   import numpy as np
+   
+   DT = []
+   ET = []
+   DoY = []
+   
+   header = df.columns
+   #parse time
+   ds = df.loc[:,header[0]:header[0]:1].values #extract date from data frame column 1
+
+   for i in range(0, len(ds)):
+      try: 
+         tt = time.strptime(str(ds[i]), "['%Y-%m-%d %H:%M']")
+      except:
+         tt = time.strptime(str(ds[i]), "['%Y-%m-%d %H:%M:%S']")
+      
+      #DT
+      DT.append(tt[0:6])
+      #Doy
+      DoY.append(float(tt[7]) + ((((float(tt[5])/60) + float(tt[4]))/60) + float(tt[3]))/24) 
+      #ET
+      ET.append(int(calendar.timegm(tt)))
+      
+   data.DT = np.array(DT)
+   data.ET = np.array(ET)
+   data.DoY = np.array(DoY)
+ 
+   return data
+   
+def ncas_aws_3_QC(df, data):
+   import numpy as np  
+
+   header = df.columns
+   
+   #Temperature
+   X = np.array(df.loc[:,header[1]:header[1]:1])
+   TT = np.empty_like(X)
+   for n in range(len(TT)):
+      try:
+         TT[n] = np.fromstring(X[n], dtype=float)
+      except:
+         TT[n] = np.nan
+   del X
+  
+   #Humidity
+   X = np.array(df.loc[:,header[2]:header[2]:1])
+   RH = np.empty_like(X)
+   for n in range(len(RH)):
+      try:
+         RH[n] = np.fromstring(X[n], dtype=float)
+      except:
+         RH[n] = np.nan
+   del X      
+   
+   #Wind speed
+   X = np.array(df.loc[:,header[3]:header[3]:1])
+   WS = np.empty_like(X)
+   for n in range(len(WS)):
+      try:
+         WS[n] = np.fromstring(X[n], dtype=float)
+      except:
+         WS[n] = np.nan
+   del X 
+   
+   #Wind direction
+   X = np.array(df.loc[:,header[4]:header[4]:1])
+   WD = np.empty_like(X)
+   for n in range(len(WD)):
+      try:
+         WD[n] = np.fromstring(X[n], dtype=float)
+      except:
+         WD[n] = np.nan
+   del X
+   
+   #Accumulated rain
+   X = np.array(df.loc[:,header[5]:header[5]:1])
+   PA = np.empty_like(X)
+   for n in range(len(PA)):
+      try:
+         PA[n] = np.fromstring(X[n], dtype=float)
+      except:
+         PA[n] = np.nan
+   del X
+   
+   #Rain rate
+   X = np.array(df.loc[:,header[6]:header[6]:1])
+   PR = np.empty_like(X)
+   for n in range(len(PR)):
+      try:
+         PR[n] = np.fromstring(X[n], dtype=float)
+      except:
+         PR[n] = np.nan
+   del X
+
+   #pressure
+   X = np.array(df.loc[:,header[7]:header[7]:1])
+   PP = np.empty_like(X)
+   for n in range(len(PP)):
+      try:
+         PP[n] = (np.fromstring(X[n], dtype=float))/10000
+      except:
+         PP[n] = np.nan
+   del X
+   
+   #Solar
+   X = np.array(df.loc[:,header[8]:header[8]:1])
+   SL = np.empty_like(X)
+   for n in range(len(SL)):
+      try:
+         SL[n] = (np.fromstring(X[n], dtype=float))
+      except:
+         SL[n] = np.nan
+   del X
+   
+   #UV
+   X = np.array(df.loc[:,header[9]:header[9]:1])
+   UV = np.empty_like(X)
+   for n in range(len(SL)):
+      try:
+         UV[n] = (np.fromstring(X[n], dtype=float))
+      except:
+         UV[n] = np.nan
+   del X
+   
+   # remove nans
+   for n in range(len(data.DoY)):
+      if np.isnan(TT[n]) == True:
+         TT[n] = -1e20
+      if np.isnan(RH[n]) == True:
+         RH[n] = -1e20  
+      if np.isnan(WS[n]) == True:
+         WS[n] = -1e20
+      if np.isnan(WD[n]) == True:
+         WD[n] = -1e20 
+      if np.isnan(PP[n]) == True:
+         PP[n] = -1e20
+      if np.isnan(PA[n]) == True:
+         PA[n] = -1e20  
+      if np.isnan(PR[n]) == True:
+         PR[n] = -1e20
+      if np.isnan(SL[n]) == True:
+         SL[n] = -1e20 
+      if np.isnan(UV[n]) == True:
+         UV[n] = -1e20     
+   
+   # create flags
+   # Temperature
+   qc_flag_temperature = np.ones_like(TT)
+   #T>30 2b
+   ix = np.where(TT > 30)
+   try:
+      qc_flag_temperature[ix] = 2
+   except:
+      pass
+   
+   #T>40 3b
+   ix = np.where(TT > 40)
+   try:
+      qc_flag_temperature[ix] = 3
+   except:
+      pass
+      
+   #T<-10 4b
+   ix = np.where((TT > -1e20) & (TT < -10))
+   try:
+      qc_flag_temperature[ix] = 4
+   except:
+      pass
+   
+   #T<-20 5b
+   ix = np.where((TT > -1e20) & (TT < -20))
+   try:
+      qc_flag_temperature[ix] = 5
+   except:
+      pass
+      
+   #Missing 6b
+   ix = np.where(TT == -1e20)
+   try:
+      qc_flag_temperature[ix] = 6
+   except:
+      pass
+      
+   #Humidity
+   qc_flag_relative_humidity = np.ones_like(RH)
+   #RH>100 2b
+   ix = np.where(RH > 100)
+   try:
+      qc_flag_relative_humidity[ix] = 2
+   except:
+      pass
+   
+   #RH == 100 3b
+   ix = np.where(RH == 100)
+   try:
+      qc_flag_relative_humidity[ix] = 3
+   except:
+      pass
+      
+   #RH<40 4b
+   ix = np.where(RH < 40)
+   try:
+      qc_flag_relative_humidity[ix] = 4
+   except:
+      pass
+   
+   #RH<0 5b
+   ix = np.where(RH < 0)
+   try:
+      qc_flag_relative_humidity[ix] = 5
+   except:
+      pass
+   
+   #Missing 6b
+   ix = np.where(RH == -1e20)
+   try:
+      qc_flag_relative_humidity[ix] = 6
+   except:
+      pass
+   
+   # Presure
+   qc_flag_pressure = np.ones_like(PP)
+   #PP>1000 2b
+   ix = np.where(PP > 1000)
+   try:
+      qc_flag_pressure[ix] = 2
+   except:
+      pass
+      
+   #PP>1100 3b
+   ix = np.where(PP > 1100)
+   try:
+      qc_flag_pressure[ix] = 3
+   except:
+      pass
+      
+   #PP<950 4b
+   ix = np.where(PP < 950)
+   try:
+      qc_flag_pressure[ix] = 4
+   except:
+      pass
+   
+   #PP<0 5b
+   ix = np.where(PP < 0)
+   try:
+      qc_flag_pressure[ix] = 5
+   except:
+      pass
+   
+   #Missing 6b
+   ix = np.where(PP == -1e20)
+   try:
+      qc_flag_pressure[ix] = 6
+   except:
+      pass
+      
+   #wind speed   
+   qc_flag_wind_speed = np.ones_like(WS)
+   #WS>30 2b
+   ix = np.where(WS > 30)
+   try:
+      qc_flag_wind_speed[ix] = 2
+   except:
+      pass
+  
+   #WS=0 3b
+   ix = np.where(WS == 0)
+   try:
+      qc_flag_wind_speed[ix] = 3
+   except:
+      pass
+  
+   #WS<0 4b
+   ix = np.where(WS < 0)
+   try:
+      qc_flag_wind_speed[ix] = 4
+   except:
+      pass
+  
+   #Missing 5b
+   ix = np.where(WS == -1e20)
+   try:
+      qc_flag_wind_speed[ix] = 5
+   except:
+      pass
+   
+   #wind direction
+   qc_flag_wind_from_direction = np.ones_like(WD)
+   #WD>360 2b
+   ix = np.where(WD > 360)
+   try:
+      qc_flag_wind_from_direction[ix] = 2
+   except:
+      pass
+      
+   #WD<0 3b
+   ix = np.where(WD < 0)
+   try:
+      qc_flag_wind_from_direction[ix] = 3
+   except:
+      pass
+   
+   #WS == 0 4b
+   ix = np.where(WS == 0)
+   try:
+      qc_flag_wind_from_direction[ix] = 4
+   except:
+      pass
+      
+   #Missing 5b
+   ix = np.where(WD == -1e20)
+   try:
+      qc_flag_wind_from_direction[ix] = 5
+   except:
+      pass
+   
+   #radiation
+   qc_flag_radiation = np.ones_like(UV)
+   #UV>2000 2b
+   ix = np.where(UV > 2000)
+   try:
+      qc_flag_radiation[ix] = 2
+   except:
+      pass
+      
+   #UV<0 3b
+   ix = np.where(UV < 0)
+   try:
+      qc_flag_radiation[ix] = 3
+   except:
+      pass
+      
+   #Missing UV 4b
+   ix = np.where(UV == -1e20)
+   try:
+      qc_flag_radiation[ix] = 4
+   except:
+      pass
+   
+   #SL>2000 5b
+   ix = np.where(SL > 2000)
+   try:
+      qc_flag_radiation[ix] = 5
+   except:
+      pass
+      
+   #SL<0 6b
+   ix = np.where(SL < 0)
+   try:
+      qc_flag_radiation[ix] = 6
+   except:
+      pass
+      
+   #Missing SL 7b
+   ix = np.where(SL == -1e20)
+   try:
+      qc_flag_radiation[ix] = 7
+   except:
+      pass
+   
+   #precipitation
+   qc_flag_precipitation = np.ones_like(PA)
+   #PA>25 2b  300 *(5/60)
+   ix = np.where(PA > 25)
+   try:
+      qc_flag_precipitation[ix] = 2
+   except:
+      pass
+      
+   #PA<0 3b
+   ix = np.where(PA < 0)
+   try:
+      qc_flag_precipitation[ix] = 3
+   except:
+      pass
+   
+   #Missing PA 4b
+   ix = np.where(PA == -1e20)
+   try:
+      qc_flag_precipitation[ix] = 4
+   except:
+      pass
+   
+   #PR>300 5b
+   ix = np.where(PR > 300)
+   try:
+      qc_flag_precipitation[ix] = 5
+   except:
+      pass
+      
+   #PR<0 6b
+   ix = np.where(PR < 0)
+   try:
+      qc_flag_precipitation[ix] = 6
+   except:
+      pass
+   
+   #Missing PR 7b
+   ix = np.where(PR == -1e20)
+   try:
+      qc_flag_precipitation[ix] = 7
+   except:
+      pass
+   
+   # min and max
+   ix = np.where(qc_flag_temperature < 3 )
+   TT_min = np.min(TT[ix])
+   TT_max = np.max(TT[ix])
+   
+   ix = np.where(qc_flag_relative_humidity == 1)
+   RH_min = np.min(RH[ix])
+   RH_max = np.max(RH[ix])
+   
+   ix = np.where(qc_flag_wind_speed == 1)
+   WS_min = np.min(WS[ix])
+   WS_max = np.max(WS[ix])
+   
+   ix = np.where(qc_flag_wind_from_direction == 1)
+   WD_min = np.min(WD[ix])
+   WD_max = np.max(WD[ix])
+   
+   ix = np.where(qc_flag_pressure < 4)
+   PP_min = np.min(PP[ix])
+   PP_max = np.max(PP[ix])
+   
+   ix = np.where(qc_flag_precipitation == 1)
+   PA_min = np.min(PA[ix])
+   PA_max = np.max(PA[ix])
+   
+   ix = np.where(qc_flag_precipitation == 1)
+   PR_min = np.min(PR[ix])
+   PR_max = np.max(PR[ix])
+   
+   ix = np.where(qc_flag_radiation == 1)
+   SL_min = np.min(SL[ix])
+   SL_max = np.max(SL[ix])
+   
+   ix = np.where(qc_flag_radiation == 1)
+   UV_min = np.min(UV[ix])
+   UV_max = np.max(UV[ix])
+   
+   #convert temperature to kelvin
+   TT = TT + 273.15
+   TT_min = TT_min + 273.15
+   TT_max = TT_max + 273.15
+   
+   data.TT = TT
+   data.TT_min = TT_min
+   data.TT_max = TT_max
+   data.RH = RH
+   data.RH_min = RH_min
+   data.RH_max = RH_max
+   data.WS = WS
+   data.WS_min = WS_min
+   data.WS_max = WS_max
+   data.WD = WD
+   data.WD_min = WD_min
+   data.WD_max = WD_max
+   data.PP = PP
+   data.PP_min = PP_min
+   data.PP_max = PP_max
+   data.PA = PA
+   data.PA_min = PA_min
+   data.PA_max = PA_max
+   data.PR = PR
+   data.PR_min = PR_min
+   data.PR_max = PR_max
+   data.SL = SL
+   data.SL_min = SL_min
+   data.SL_max = SL_max
+   data.UV = UV
+   data.UV_min = UV_min
+   data.UV_max = UV_max
+   data.qc_flag_temperature = qc_flag_temperature
+   data.qc_flag_relative_humidity = qc_flag_relative_humidity
+   data.qc_flag_pressure = qc_flag_pressure
+   data.qc_flag_wind_speed = qc_flag_wind_speed
+   data.qc_flag_wind_from_direction = qc_flag_wind_from_direction
+   data.qc_flag_radiation = qc_flag_radiation
+   data.qc_flag_precipitation = qc_flag_precipitation
+   
+   return data  
+
+def ncas_aws_3(fn_in, data, logfile): 
+   import pandas as pd  
+  
+   try:
+      df = pd.read_csv(fn_in, usecols=[0,1,4,6,8,9,10,11,14,15])
+   except:
+      # exit if problem encountered
+      print("Unable to open data file: ", fn_in, ". This program will terminate")
+      g = open(logfile, 'a')
+      g.write(datetime.utcnow().isoformat() + ' Unable to open data file: ' + fn_in + 'Program will terminate.\n')
+      g.close()
+      exit()
+   
+   #parse time
+   data = ncas_aws_3_time(df, data)
+   
+   #parse_data
+   data = ncas_aws_3_QC(df, data)
+   
+   return data 
